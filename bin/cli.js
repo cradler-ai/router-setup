@@ -237,8 +237,13 @@ function cherryDeepLink(key) {
     name: "Cradler Router",
     type: "openai",
   };
-  // Cherry Studio 端把 data 里的 _/- 还原成 +// 再 base64 解码 —— 用 base64url 正好对上。
-  const data = Buffer.from(JSON.stringify(cfg)).toString("base64url");
+  // Cherry Studio 的还原映射是 _→+ 、-→/(与标准 base64url 相反!),
+  // 所以要用标准 base64 再按它的约定替换,详见其 providersImport.ts。
+  const data = Buffer.from(JSON.stringify(cfg))
+    .toString("base64")
+    .replaceAll("+", "_")
+    .replaceAll("/", "-")
+    .replace(/=+$/, "");
   return `cherrystudio://providers/api-keys?v=1&data=${data}`;
 }
 
