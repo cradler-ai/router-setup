@@ -1,0 +1,13 @@
+{
+  "name": "@cradler/router-setup",
+  "version": "0.1.0",
+  "description": "One-command setup: point Claude Code, Codex, and Gemini CLI at Cradler Router.",
+  "bin": { "cradler-router-setup": "bin/cli.js" },
+  "files": ["bin"],
+  "engines": { "node": ">=18" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/cradler-ai/router-setup.git" },
+  "homepage": "https://cradler.ai/router/api",
+  "keywords": ["cradler", "router", "claude-code", "codex", "gemini-cli", "llm", "api"],
+  "packageManager": "pnpm@9.15.0"
+}
