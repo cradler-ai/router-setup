@@ -42,7 +42,7 @@ cc-switch**.
 ## Manual setup
 
 Prefer to do it by hand? Every snippet is in the
-[API docs](https://cradler.ai/router/api).
+[API docs](https://cradler.ai/api-docs).
 
 ## License
 

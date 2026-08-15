@@ -295,7 +295,7 @@ UI-configured apps — paste these values:
     Settings → Model provider → Add → OpenAI type
     API URL: ${BASE}/v1   ·   API Key: ${k}
 
-Full docs: https://cradler.ai/router/api`);
+Full docs: https://cradler.ai/api-docs`);
 }
 
 /* ---------- verify ---------- */
