@@ -1,6 +1,6 @@
 {
   "name": "@cradler/router-setup",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "One-command setup: point Claude Code, Codex, and Gemini CLI at Cradler Router.",
   "bin": { "cradler-router-setup": "bin/cli.js" },
   "files": ["bin"],

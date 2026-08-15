@@ -221,7 +221,7 @@ function zcodeLines(key) {
   return [
     'export ZCODE_PROVIDER="openai-compatible"',
     'export ZCODE_OPENAI_PROVIDER="cradler"',
-    'export ZCODE_OPENAI_MODEL="glm-5.2"',
+    'export ZCODE_OPENAI_MODEL="deepseek-v4-pro"',
     `export ZCODE_OPENAI_BASE_URL="${BASE}/v1"`,
     `export ZCODE_OPENAI_API_KEY="${key}"`,
   ];
@@ -273,14 +273,14 @@ UI-configured apps — paste these values:
 ■ Cursor  (Settings → Models → API Keys)
     Override OpenAI Base URL:  ${BASE}/v1
     OpenAI API Key:            ${k}
-    Add models:                gpt-5.5, gpt-5.4-mini, deepseek-v4-pro, glm-5.2
+    Add models:                gpt-5.5, gpt-5.4-mini, deepseek-v4-pro, grok-4.6
     Note: Cursor's override speaks the OpenAI protocol only — Claude/Gemini
     model names will not verify there; use GPT/DeepSeek/GLM/Kimi IDs.
 
 ■ Trae  (Settings → Models → Add custom model, OpenAI-compatible)
     Base URL:   ${BASE}/v1
     API Key:    ${k}
-    Model IDs:  gpt-5.5, deepseek-v4-pro, glm-5.2, kimi-k3
+    Model IDs:  gpt-5.5, deepseek-v4-pro, grok-4.6
 
 ■ WorkBuddy / CodeBuddy  (model picker → Configure custom models)
     URL:        ${BASE}/v1
