@@ -30,8 +30,9 @@ verifies your key against the Router with a live call.
 | Cherry Studio | opens the official `cherrystudio://` one-click import (force with `--cherry`) |
 | DeepSeek Harness (`dsh`) | a `cradler` provider in `$DSH_HOME/settings.yaml`, keyed off `CRADLER_ROUTER_KEY` |
 
-> `dsh` custom providers accept the OpenAI protocols only, so that route carries
-> the GPT / DeepSeek / Grok model IDs. `$DSH_HOME` must already exist — we honor
+> `dsh` custom providers accept the OpenAI protocols only, which is no longer a
+> limit: `/v1/chat/completions` carries the whole catalog, so that one route
+> reaches Claude and Gemini too. `$DSH_HOME` must already exist — we honor
 > the env var, or `~/.dsh` / `~/.deepseek-harness` if present, and never create
 > a home dsh has not made. A pre-existing `llm-pi-ai:` section we did not write
 > is left alone and reported, so your own provider config is never clobbered.

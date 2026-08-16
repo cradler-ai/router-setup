@@ -194,6 +194,7 @@ function setupOpenClaw(key) {
     models: [
       { id: "gpt-5.5", name: "GPT-5.5 (Cradler)" },
       { id: "gpt-5.4-mini", name: "GPT-5.4 Mini (Cradler)" },
+      { id: "gemini-3.6-flash", name: "Gemini 3.6 Flash (Cradler)" },
       { id: "deepseek-v4-pro", name: "DeepSeek V4 Pro (Cradler)" },
     ],
   };
@@ -240,10 +241,10 @@ function dshHome() {
   return null;
 }
 
-// 只有一个 provider:dsh 的自定义 provider 协议集只收 openai-completions /
-// openai-responses(见 llm-pi-ai README:supportedProtocols 比 pi-ai 全集窄),
-// anthropic-messages 不能自定义 —— 而我们的 Claude/Gemini 只走各自原生协议,
-// 因此 YAML 这条路够不到它们。要在 dsh 里用 Claude 得靠插件注册 adapter。
+// dsh 的自定义 provider 只收 openai-completions / openai-responses
+// (见 llm-pi-ai README:supportedProtocols 比 pi-ai 全集窄,anthropic-messages
+// 不能自定义)。这不再是限制 —— Router 的 /v1/chat/completions 承载全目录,
+// 所以一个 openai-completions provider 就能拿到 Claude 和 Gemini。
 // key 用 apiKeyEnv 引用 CRADLER_ROUTER_KEY(共享 shell 标记块已导出),
 // settings.yaml 里不落明文 —— 与 dsh「凭据与配置分离、按请求解析」的设计一致。
 // baseURL 带 /v1:dsh 把它当前缀而非待解析 URL,自己追加操作路径。
@@ -258,6 +259,10 @@ function dshProviderYaml() {
     "      models:",
     "        - id: gpt-5.5",
     "        - id: gpt-5.4-mini",
+    "        - id: claude-sonnet-4-6",
+    "        - id: claude-opus-4-8",
+    "        - id: claude-haiku-4-5",
+    "        - id: gemini-3.6-flash",
     "        - id: deepseek-v4-pro",
     "        - id: deepseek-v4-flash-free",
     "        - id: grok-4.6",
@@ -330,14 +335,14 @@ UI-configured apps — paste these values:
 ■ Cursor  (Settings → Models → API Keys)
     Override OpenAI Base URL:  ${BASE}/v1
     OpenAI API Key:            ${k}
-    Add models:                gpt-5.5, gpt-5.4-mini, deepseek-v4-pro, grok-4.6
-    Note: Cursor's override speaks the OpenAI protocol only — Claude/Gemini
-    model names will not verify there; use GPT/DeepSeek/GLM/Kimi IDs.
+    Add models:                gpt-5.5, claude-sonnet-4-6, gemini-3.6-flash,
+                               deepseek-v4-pro, grok-4.6
+    Every model works here — the OpenAI protocol carries the whole catalog.
 
 ■ Trae  (Settings → Models → Add custom model, OpenAI-compatible)
     Base URL:   ${BASE}/v1
     API Key:    ${k}
-    Model IDs:  gpt-5.5, deepseek-v4-pro, grok-4.6
+    Model IDs:  gpt-5.5, claude-sonnet-4-6, gemini-3.6-flash, deepseek-v4-pro
 
 ■ WorkBuddy / CodeBuddy  (model picker → Configure custom models)
     URL:        ${BASE}/v1
@@ -360,9 +365,8 @@ ${dshProviderYaml().split("\n").map((l) => "      " + l).join("\n")}
 
     Then make sure the key env is set before starting dsh:
       export CRADLER_ROUTER_KEY="${k}"
-    dsh custom providers speak the OpenAI protocol only, so this route carries
-    the GPT / DeepSeek / Grok IDs. Claude and Gemini need their native
-    protocols — install @cradler/dsh-plugin to get those inside dsh.
+    One route, the whole catalog — the OpenAI protocol carries Claude and
+    Gemini too.
 
 Full docs: https://cradler.ai/api-docs`);
 }
