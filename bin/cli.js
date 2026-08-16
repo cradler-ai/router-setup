@@ -14,6 +14,7 @@
  *   OpenClaw     → ~/.openclaw/openclaw.json (models.providers entries)
  *   ZCode        → shell profile ZCODE_* exports (same marker block)
  *   Cherry Studio→ official cherrystudio:// one-click import deep link
+ *   DeepSeek Harness (dsh) → $DSH_HOME/settings.yaml llm-pi-ai providers
  * UI-configured apps (Cursor / Trae / WorkBuddy / cc-switch) cannot be safely
  * written from outside — `--guides` prints exact values to paste.
  *
@@ -227,6 +228,62 @@ function zcodeLines(key) {
   ];
 }
 
+/* ---------- DeepSeek Harness (dsh): $DSH_HOME/settings.yaml(检测到才配)---------- */
+
+function dshHome() {
+  if (process.env.DSH_HOME) return process.env.DSH_HOME;
+  // dsh 文档只写 $DSH_HOME、未公布默认值 —— 只认已存在的目录,绝不猜着建。
+  for (const cand of [".dsh", ".deepseek-harness"]) {
+    const p = path.join(home, cand);
+    if (exists(p)) return p;
+  }
+  return null;
+}
+
+// 只有一个 provider:dsh 的自定义 provider 协议集只收 openai-completions /
+// openai-responses(见 llm-pi-ai README:supportedProtocols 比 pi-ai 全集窄),
+// anthropic-messages 不能自定义 —— 而我们的 Claude/Gemini 只走各自原生协议,
+// 因此 YAML 这条路够不到它们。要在 dsh 里用 Claude 得靠插件注册 adapter。
+// key 用 apiKeyEnv 引用 CRADLER_ROUTER_KEY(共享 shell 标记块已导出),
+// settings.yaml 里不落明文 —— 与 dsh「凭据与配置分离、按请求解析」的设计一致。
+// baseURL 带 /v1:dsh 把它当前缀而非待解析 URL,自己追加操作路径。
+function dshProviderYaml() {
+  return [
+    "llm-pi-ai:",
+    "  providers:",
+    "    cradler:",
+    "      apiKeyEnv: CRADLER_ROUTER_KEY",
+    "      api: openai-completions",
+    `      baseURL: ${BASE}/v1`,
+    "      models:",
+    "        - id: gpt-5.5",
+    "        - id: gpt-5.4-mini",
+    "        - id: deepseek-v4-pro",
+    "        - id: deepseek-v4-flash-free",
+    "        - id: grok-4.6",
+  ].join("\n");
+}
+
+function setupDsh() {
+  const dir = dshHome();
+  if (!dir) return false;
+  const file = path.join(dir, "settings.yaml");
+  let text = readIfExists(file) || "";
+  const block = `${MARK_BEGIN}\n${dshProviderYaml()}\n${MARK_END}`;
+  if (text.includes(MARK_BEGIN)) {
+    text = text.replace(new RegExp(`${MARK_BEGIN}[\\s\\S]*?${MARK_END}`), block);
+  } else if (/^llm-pi-ai\s*:/m.test(text)) {
+    // 已有 llm-pi-ai 顶层键且不是我们写的 —— 盲目追加会产生重复键,交给用户粘贴。
+    notes.push(`skipped DeepSeek Harness: ${file} already has an llm-pi-ai section — add the providers by hand, see --guides`);
+    return true;
+  } else {
+    text = text.trimEnd() + (text.trim() ? "\n\n" : "") + block + "\n";
+  }
+  writeFile(file, text);
+  notes.push("DeepSeek Harness: restart `dsh web` from a new terminal so CRADLER_ROUTER_KEY is set, then pick cradler/gpt-5.5");
+  return true;
+}
+
 /* ---------- Cherry Studio:官方一键导入深链(检测到才弹)---------- */
 
 function cherryDeepLink(key) {
@@ -294,6 +351,18 @@ UI-configured apps — paste these values:
 ■ Cherry Studio (if it did not auto-open)
     Settings → Model provider → Add → OpenAI type
     API URL: ${BASE}/v1   ·   API Key: ${k}
+
+■ DeepSeek Harness / dsh (if it was not auto-detected)
+    Web UI → Settings → Models → Add a custom provider, or append to
+    $DSH_HOME/settings.yaml:
+
+${dshProviderYaml().split("\n").map((l) => "      " + l).join("\n")}
+
+    Then make sure the key env is set before starting dsh:
+      export CRADLER_ROUTER_KEY="${k}"
+    dsh custom providers speak the OpenAI protocol only, so this route carries
+    the GPT / DeepSeek / Grok IDs. Claude and Gemini need their native
+    protocols — install @cradler/dsh-plugin to get those inside dsh.
 
 Full docs: https://cradler.ai/api-docs`);
 }
@@ -363,6 +432,7 @@ async function main() {
   writeShellBlock(shellLines);
 
   const hasOpenClaw = setupOpenClaw(key);
+  const hasDsh = setupDsh();
   let cherryOpened = false;
   if (cherryInstalled() || args.includes("--cherry")) {
     cherryOpened = openCherry(cherryDeepLink(key));
@@ -381,6 +451,7 @@ async function main() {
     log("  codex           # Codex (new terminal first)");
     log("  gemini          # Gemini CLI");
     if (hasOpenClaw) log("  openclaw        # OpenClaw (providers cradler / cradler-claude)");
+    if (hasDsh) log("  npx @deepseek-ai/dsh web   # DeepSeek Harness (new terminal first)");
     if (hasZcode) log("  zcode           # ZCode (new terminal first)");
     if (cherryOpened) log("  Cherry Studio   # confirm the import prompt");
     if (args.includes("--guides")) {
